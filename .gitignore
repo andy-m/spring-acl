@@ -1,4 +1,6 @@
 .metadata
+.gradle
+.settings
 bin
 build
 Servers
