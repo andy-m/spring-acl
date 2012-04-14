@@ -1,0 +1,18 @@
+
+def versionFile = new File('version.properties')
+if (!versionFile.exists())
+{
+	versionFile = new File('../version.properties')
+}
+def config = new ConfigSlurper().parse(versionFile.toURL());
+
+allprojects {
+	version = "${config.versionNumber}.${config.buildNumber}"
+	group = "org.spring.acl.enhancement"
+}
+
+dependsOnChildren()
+
+subprojects {
+	apply from:"../common-configuration.gradle"
+}

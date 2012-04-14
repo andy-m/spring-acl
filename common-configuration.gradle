@@ -1,0 +1,36 @@
+sourceCompatibility = org.gradle.api.JavaVersion.VERSION_1_6
+targetCompatibility = org.gradle.api.JavaVersion.VERSION_1_6
+
+apply plugin: 'java'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'maven'
+
+springVersion = "3.1.0.RELEASE"
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+dependencies {
+	compile "org.springframework.security:spring-security-acl:${springVersion}"
+	
+	testCompile "junit:junit:4.8.2"
+	testCompile "org.mockito:mockito-all:1.8.5"
+}
+
+task sourcesJar(type: Jar, dependsOn:classes) {
+	classifier = 'sources'
+	from sourceSets.main.allSource
+}
+
+task testJar(type: Jar) {
+	classifier = 'tests'
+	from sourceSets.test.output
+}
+
+artifacts {
+	archives sourcesJar
+	archives testJar
+}
+
