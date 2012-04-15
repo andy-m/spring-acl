@@ -3,10 +3,12 @@ hbaseVersion = "0.92.0"
 dependencies {
 	compile ("org.apache.hbase:hbase:${hbaseVersion}") {
 		exclude group: 'tomcat'
+		exclude group: 'org.codehaus.jackson'
 	}
 
 	compile ("org.apache.hadoop:hadoop-core:1.0.0") {
 		exclude group: 'tomcat'
+		exclude group: 'org.codehaus.jackson'
 	}
 	
 	compile project (":spring-acl-persistence")

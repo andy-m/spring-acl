@@ -28,7 +28,7 @@ import spring.acl.enhancement.identity.mapping.SimpleTestClass;
 	limitations under the License.
 */
 
-public class TestConfigurableObjectIdentityRetrievalStrategy {
+public class ConfigurableObjectIdentityRetrievalStrategyTest {
 	
 	private ConfigurableObjectIdentityRetrievalStrategy underTest;
 	@Mock

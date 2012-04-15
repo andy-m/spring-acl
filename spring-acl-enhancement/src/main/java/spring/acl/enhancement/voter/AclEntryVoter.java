@@ -51,12 +51,12 @@ import spring.acl.enhancement.identity.strategy.method.MethodInvocationObjectIdR
  * from a datasource first.
  *
  * To configure this as per the standard Spring {@link org.springframework.security.acls.AclEntryVoter}
- * specify the DefaultMethodInvocationObjectIdRetrievalStrategy with the approprate processConfigAttribute and internalMethod
+ * simply configure with the approprate processConfigAttribute and internalMethod
  * parameters set. 
- * If you want to remove the default use of 'getId()' as a final all to retrieve the id from a 
+ * If you want to remove the default use of 'getId()' as a final call to retrieve the id from a 
  * resolved domain object then simple configure the {@link DefaultMethodInvocationObjectIdRetrievalStrategy}  
- * with a {@link ConfigurableObjectIdentityRetrievalStrategy} specifying no constructor args to disable the call altogether
- * or a constructor arg with the method name you'd like to use as an alternative.
+ * with a {@link ConfigurableObjectIdentityRetrievalStrategy} specifying no constructor args to disable the call 
+ * altogether or a constructor arg with the method name you'd like to use as an alternative.
  * 
  * @author Andy Moody
  */
@@ -70,26 +70,35 @@ public class AclEntryVoter implements AccessDecisionVoter<MethodInvocation> {
 	private final AclService aclService;
 	private final String processConfigAttribute;
 	private final List<Permission> requirePermission;
-	private MethodInvocationObjectIdRetrievalStrategy objectIdentityRetrievalStrategy = new DefaultMethodInvocationObjectIdRetrievalStrategy();
-	private SidRetrievalStrategy sidRetrievalStrategy = new SidRetrievalStrategyImpl();
+	private MethodInvocationObjectIdRetrievalStrategy objectIdentityRetrievalStrategy;
+	private SidRetrievalStrategy sidRetrievalStrategy;
 
 	public AclEntryVoter(final AclService aclService, final String processConfigAttribute,
 			final List<Permission> requirePermission) {
-		Assert.notNull(processConfigAttribute, "A processConfigAttribute is mandatory");
-		Assert.notNull(aclService, "An AclService is mandatory");
-
-		if ((requirePermission == null) || (requirePermission.size() == 0))
-		{
-			throw new IllegalArgumentException("One or more requirePermission entries is mandatory");
-		}
-		this.aclService = aclService;
-		this.processConfigAttribute = processConfigAttribute;
-		this.requirePermission = requirePermission;
+		this(aclService, processConfigAttribute, requirePermission, defaultObjectIdentityRetrievalStrategy());
+	}
+	
+	public AclEntryVoter(final AclService aclService, final String processConfigAttribute, final List<Permission> requirePermission, 
+			final MethodInvocationObjectIdRetrievalStrategy objectIdentityRetrievalStrategy) {
+		this(aclService, processConfigAttribute, requirePermission, objectIdentityRetrievalStrategy, defaultSidRetrievalStrategy());
+	}
+	
+	public AclEntryVoter(final AclService aclService, final String processConfigAttribute, final List<Permission> requirePermission, 
+			final SidRetrievalStrategy sidRetrievalStrategy) {
+		this(aclService, processConfigAttribute, requirePermission, defaultObjectIdentityRetrievalStrategy(), sidRetrievalStrategy);
 	}
 	
 	public AclEntryVoter(final AclService aclService, final String processConfigAttribute, final List<Permission> requirePermission, 
 			final MethodInvocationObjectIdRetrievalStrategy objectIdentityRetrievalStrategy, final SidRetrievalStrategy sidRetrievalStrategy) {
-		this(aclService, processConfigAttribute, requirePermission);
+		Assert.notNull(processConfigAttribute, "A processConfigAttribute is mandatory");
+		Assert.notNull(aclService, "An AclService is mandatory");
+		Assert.notNull(objectIdentityRetrievalStrategy, "A MethodInvocationObjectIdRetrievalStrategy is Mandatory");
+		Assert.notNull(objectIdentityRetrievalStrategy, "A SidRetrievalStrategy is Mandatory");
+		Assert.isTrue(requirePermission!=null && !requirePermission.isEmpty(), "One or more requirePermission entries is mandatory");
+
+		this.aclService = aclService;
+		this.processConfigAttribute = processConfigAttribute;
+		this.requirePermission = requirePermission;
 		this.objectIdentityRetrievalStrategy = objectIdentityRetrievalStrategy;
 		this.sidRetrievalStrategy = sidRetrievalStrategy;
 	}
@@ -204,4 +213,12 @@ public class AclEntryVoter implements AccessDecisionVoter<MethodInvocation> {
 		return MethodInvocation.class.isAssignableFrom(clazz);
 	}
 
+	private static DefaultMethodInvocationObjectIdRetrievalStrategy defaultObjectIdentityRetrievalStrategy() {
+		return new DefaultMethodInvocationObjectIdRetrievalStrategy();
+	}
+
+	private static SidRetrievalStrategyImpl defaultSidRetrievalStrategy() {
+		return new SidRetrievalStrategyImpl();
+	}
+	
 }

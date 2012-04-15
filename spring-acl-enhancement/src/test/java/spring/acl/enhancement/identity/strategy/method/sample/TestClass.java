@@ -25,16 +25,23 @@ public class TestClass {
 		
 	}
 	
-
-	public void methodWithNoSecuredAgainstAndNoMatchingParams(final Object param){
+	public void methodWithNoSecuredAgainstAndSingleParam(final Object param1){
 		
 	}
 	
-	public void methodWithNoSecuredAgainstAndParamsWhichMatchBecauseOfSecuredId(@SecuredId final Object param){
+	public void methodWithNoSecuredAgainstAndSingleParamWithSecuredId(@SecuredId(internalMethod="someOtherMethod") final Object param1){
 		
 	}
 
-	public void methodWithNoSecuredAgainstAndParamsWhichMatchBecauseOfAssignable(final TestClass param){
+	public void methodWithNoSecuredAgainstAndNoMatchingParams(final Object param1, final Object param2){
+		
+	}
+	
+	public void methodWithNoSecuredAgainstAndParamsWhichMatchBecauseOfSecuredId(final Object param1, @SecuredId final Object param2){
+		
+	}
+
+	public void methodWithNoSecuredAgainstAndParamsWhichMatchBecauseOfAssignable(final Object param1, final TestClass param2){
 		
 	}
 	
@@ -44,17 +51,27 @@ public class TestClass {
 	}
 	
 	@SecuredAgainst(TestClass.class)
-	public void methodWithSecuredAgainstAndNoMatchingParams(final Object param){
+	public void methodWithSecuredAgainstAndSingleParam(final Object param1){
 		
 	}
 	
 	@SecuredAgainst(TestClass.class)
-	public void methodWithSecuredAgainstAndParamsWhichMatchBecauseOfSecuredId(@SecuredId final Object param){
+	public void methodWithSecuredAgainstAndSingleParamWithSecuredId(@SecuredId(internalMethod="someOtherMethod") final Object param1){
 		
 	}
 	
 	@SecuredAgainst(TestClass.class)
-	public void methodWithSecuredAgainstAndParamsWhichMatchBecauseOfAssignable(final TestClass param){
+	public void methodWithSecuredAgainstAndNoMatchingParams(final Object param1, final Object param2){
+		
+	}
+	
+	@SecuredAgainst(TestClass.class)
+	public void methodWithSecuredAgainstAndParamsWhichMatchBecauseOfSecuredId(final Object param1, @SecuredId final Object param2){
+		
+	}
+	
+	@SecuredAgainst(TestClass.class)
+	public void methodWithSecuredAgainstAndParamsWhichMatchBecauseOfAssignable(final Object param1, final TestClass param2){
 		
 	}
 	

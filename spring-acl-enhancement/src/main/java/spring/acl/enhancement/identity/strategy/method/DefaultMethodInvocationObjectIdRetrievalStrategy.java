@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.security.acls.model.ObjectIdentity;
 import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import spring.acl.enhancement.annotation.SecuredAgainst;
@@ -41,10 +42,12 @@ import spring.acl.enhancement.identity.strategy.ExtendedObjectIdentityRetrievalS
  * It will identify the first appropriate parameter to use using the following
  * criteria (in priority order):
  * 
- * 1) Does this parameter have the {@link SecuredId} annotation with a class
+ * 1) Is this the only parameter
+ * 
+ * 2) Does this parameter have the {@link SecuredId} annotation with a class
  * from which the configured class can be assigned.
  * 
- * 2) Is the configured class assignable from the class of the parameter.
+ * 3) Is the configured class assignable from the class of the parameter.
  * 
  * So any parameter matching criteria 1) will be used in preference to a
  * parameter matching criteria 2 even if the parameter matching criteria 2 is
@@ -74,14 +77,12 @@ public class DefaultMethodInvocationObjectIdRetrievalStrategy implements MethodI
 	private String internalMethod;
 	
 	public DefaultMethodInvocationObjectIdRetrievalStrategy(){}
-	
-	public DefaultMethodInvocationObjectIdRetrievalStrategy(final ExtendedObjectIdentityRetrievalStrategy mappedIdentityRetrievalStrategy, 
-			final Class<?> processDomainObjectClass, final String internalMethod) {
-		this.mappedIdentityRetrievalStrategy = mappedIdentityRetrievalStrategy;
-		this.processDomainObjectClass = processDomainObjectClass;
-		this.internalMethod = internalMethod;
-	}
 
+	public DefaultMethodInvocationObjectIdRetrievalStrategy(final ExtendedObjectIdentityRetrievalStrategy mappedIdentityRetrievalStrategy){
+		Assert.notNull(mappedIdentityRetrievalStrategy, "An ExtendedObjectIdentityRetrievalStrategy is mandatory");
+		this.mappedIdentityRetrievalStrategy = mappedIdentityRetrievalStrategy;
+	}
+	
 	@Override
 	public ObjectIdentity getObjectIdentity(final MethodInvocation invocation) {
 		SecureObjectMapping secureObjectMapping = locateSecureObjectMapping(invocation);
@@ -110,28 +111,43 @@ public class DefaultMethodInvocationObjectIdRetrievalStrategy implements MethodI
 		Class<?>[] parameterTypes = method.getParameterTypes();
 		Object[] arguments = invocation.getArguments();
 		Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-
 		
-		for (int i = 0; i < arguments.length && matchingSecuredIdParamValue == null; i++)
+		if(arguments.length == 1) 
 		{
-			Object argument = arguments[i];
-
-			Annotation[] annotations = parameterAnnotations[i];
+			Object argument = arguments[0];
+			Annotation[] annotations = parameterAnnotations[0];
 			SecuredId parameterAnnotation = locateAnnotation(annotations);
+			String internalMethod = this.internalMethod;
 			if (parameterAnnotation != null)
 			{
-				String internalMethod = resolveInternalMethod(parameterAnnotation);
-				matchingSecuredIdParamValue = new SecureObjectMappingWithInternalMethod(argument, securedClass, internalMethod);
-				break; // we've found a parameter which specifies it provides the id, so break;
+				internalMethod = resolveInternalMethod(parameterAnnotation);
 			}
-
-			Class<?> parameterType = parameterTypes[i];
-
-			if (matchingAssignable == null && securedClass.isAssignableFrom(parameterType))
+			matchingSecuredIdParamValue = new SecureObjectMappingWithInternalMethod(argument, securedClass, internalMethod);
+		}
+		else
+		{
+			for (int i = 0; i < arguments.length && matchingSecuredIdParamValue == null; i++)
 			{
-				//here we use the actual argument type as the secured class since we are an instance of the required type.
-				matchingAssignable = new SecureObjectMappingWithInternalMethod(argument, internalMethod);
+				Object argument = arguments[i];
+				
+				Annotation[] annotations = parameterAnnotations[i];
+				SecuredId parameterAnnotation = locateAnnotation(annotations);
+				if (parameterAnnotation != null)
+				{
+					String internalMethod = resolveInternalMethod(parameterAnnotation);
+					matchingSecuredIdParamValue = new SecureObjectMappingWithInternalMethod(argument, securedClass, internalMethod);
+					break; // we've found a parameter which specifies it provides the id, so break;
+				}
+				
+				Class<?> parameterType = parameterTypes[i];
+				
+				if (matchingAssignable == null && securedClass.isAssignableFrom(parameterType))
+				{
+					//here we use the actual argument type as the secured class since we are an instance of the required type.
+					matchingAssignable = new SecureObjectMappingWithInternalMethod(argument, internalMethod);
+				}
 			}
+			
 		}
 		return firstNonNull(matchingSecuredIdParamValue, matchingAssignable);
 	}
@@ -189,10 +205,6 @@ public class DefaultMethodInvocationObjectIdRetrievalStrategy implements MethodI
 	}
 
 	/************************************* Getters and Setters ***********************************************/
-	
-	public void setMappedIdentityRetrievalStrategy(final ExtendedObjectIdentityRetrievalStrategy mappedIdentityRetrievalStrategy) {
-		this.mappedIdentityRetrievalStrategy = mappedIdentityRetrievalStrategy;
-	}
 	
 	public void setProcessDomainObjectClass(final Class<?> processDomainObjectClass) {
 		this.processDomainObjectClass = processDomainObjectClass;

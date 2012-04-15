@@ -22,6 +22,7 @@ import org.springframework.security.acls.domain.ACLUtil;
 import org.springframework.security.acls.domain.AccessControlEntryImpl;
 import org.springframework.security.acls.domain.AclAuthorizationStrategy;
 import org.springframework.security.acls.domain.AuditLogger;
+import org.springframework.security.acls.domain.ConsoleAuditLogger;
 import org.springframework.security.acls.domain.DefaultPermissionFactory;
 import org.springframework.security.acls.domain.DefaultPermissionGrantingStrategy;
 import org.springframework.security.acls.domain.PermissionFactory;
@@ -101,11 +102,37 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 	@SuppressWarnings("rawtypes")
 	private final Map<Class, AclIdentifierConverter> aclIdentifierConverters;
 
+	/**
+	 * S
+	 * @param tablePool
+	 * @param authorizationStrategy
+	 * @param aclCache
+	 */
+	public HBaseACLRepository(final HTablePool tablePool, final AclAuthorizationStrategy authorizationStrategy,
+			final AclCache aclCache){
+		this(tablePool, new ConsoleAuditLogger(), authorizationStrategy, aclCache);
+	}
+	
+	/**
+	 * Simplified constructor utilising the defaultPermissionGrantingStrategy
+	 * with the provided AuditLogger
+	 * @param tablePool
+	 * @param auditLogger
+	 * @param authorizationStrategy
+	 * @param aclCache
+	 */
 	public HBaseACLRepository(final HTablePool tablePool, final AuditLogger auditLogger,
 			final AclAuthorizationStrategy authorizationStrategy, final AclCache aclCache) {
 		this(tablePool, authorizationStrategy, new DefaultPermissionGrantingStrategy(auditLogger), aclCache);
 	}
 
+	/**
+	 * Constructor allowing full customization.
+	 * @param tablePool
+	 * @param authorizationStrategy
+	 * @param permissionGrantingStrategy
+	 * @param aclCache
+	 */
 	public HBaseACLRepository(final HTablePool tablePool, final AclAuthorizationStrategy authorizationStrategy,
 			final PermissionGrantingStrategy permissionGrantingStrategy, final AclCache aclCache) {
 		this.tablePool = tablePool;

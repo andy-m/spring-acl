@@ -38,7 +38,7 @@ import spring.acl.enhancement.identity.strategy.method.sample.TestClass2;
 	limitations under the License.
 */
 
-public class TestDefaultMethodInvocationObjectIdRetrievalStrategy {
+public class DefaultMethodInvocationObjectIdRetrievalStrategyTest {
 
 	private static final String INTERNAL_METHOD = "someInternalMethod";
 	private DefaultMethodInvocationObjectIdRetrievalStrategy underTest;
@@ -52,7 +52,8 @@ public class TestDefaultMethodInvocationObjectIdRetrievalStrategy {
 	@Before
 	public void setUp(){
 		initMocks(this);
-		underTest = new DefaultMethodInvocationObjectIdRetrievalStrategy(mappedIdentityRetrievalStrategy, null, INTERNAL_METHOD);
+		underTest = new DefaultMethodInvocationObjectIdRetrievalStrategy(mappedIdentityRetrievalStrategy);
+		underTest.setInternalMethod(INTERNAL_METHOD);
 	}
 	
 	@Test(expected = AuthenticationServiceException.class)
@@ -78,7 +79,7 @@ public class TestDefaultMethodInvocationObjectIdRetrievalStrategy {
 	
 	@Test
 	public void nullReturnedWhenNoMatchingParamsExistUsingProcessDomainObjectClass() throws SecurityException, NoSuchMethodException{
-		stubMethodInvocation("methodWithNoSecuredAgainstAndNoMatchingParams", new Class<?>[]{Object.class}, new Object());
+		stubMethodInvocation("methodWithNoSecuredAgainstAndNoMatchingParams", new Class<?>[]{Object.class, Object.class}, new Object(), new Object());
 		underTest.setProcessDomainObjectClass(TestClass.class);
 		ObjectIdentity returned = underTest.getObjectIdentity(invocation);
 		assertNull(returned);
@@ -86,15 +87,53 @@ public class TestDefaultMethodInvocationObjectIdRetrievalStrategy {
 	
 	@Test
 	public void nullReturnedWhenNoMatchingParamsExistUsingSecuredAgainstConfig() throws SecurityException, NoSuchMethodException{
-		stubMethodInvocation("methodWithSecuredAgainstAndNoMatchingParams", new Class<?>[]{Object.class}, new Object());
+		stubMethodInvocation("methodWithSecuredAgainstAndNoMatchingParams", new Class<?>[]{Object.class, Object.class}, new Object(), new Object());
 		ObjectIdentity returned = underTest.getObjectIdentity(invocation);
 		assertNull(returned);
 	}
 	
 	@Test
+	public void argumentReturnedWhenSingleParamExistsUsingProcessDomainObjectClass() throws SecurityException, NoSuchMethodException{
+		final Object arg = new Object();
+		stubMethodInvocation("methodWithNoSecuredAgainstAndSingleParam", new Class<?>[]{Object.class}, arg);
+		when(mappedIdentityRetrievalStrategy.getObjectIdentity(Mockito.isA(SecureObjectMappingWithInternalMethod.class))).thenAnswer(assertMappingAndReturnIdentity(arg));
+		underTest.setProcessDomainObjectClass(TestClass.class);
+		ObjectIdentity returned = underTest.getObjectIdentity(invocation);
+		assertEquals(identity, returned);
+	}
+	
+	@Test
+	public void argumentReturnedWhenSingleParamExistsUsingSecuredAgainstConfig() throws SecurityException, NoSuchMethodException{
+		Object arg = new Object();
+		stubMethodInvocation("methodWithSecuredAgainstAndSingleParam", new Class<?>[]{Object.class}, arg);
+		when(mappedIdentityRetrievalStrategy.getObjectIdentity(Mockito.isA(SecureObjectMappingWithInternalMethod.class))).thenAnswer(assertMappingAndReturnIdentity(arg));
+		ObjectIdentity returned = underTest.getObjectIdentity(invocation);
+		assertEquals(identity, returned);
+	}
+	
+	@Test
+	public void argumentReturnedWithInternalMethodWhenSecuredIdSingleParamExistsUsingProcessDomainObjectClass() throws SecurityException, NoSuchMethodException{
+		final Object arg = new Object();
+		stubMethodInvocation("methodWithNoSecuredAgainstAndSingleParamWithSecuredId", new Class<?>[]{Object.class}, arg);
+		when(mappedIdentityRetrievalStrategy.getObjectIdentity(Mockito.isA(SecureObjectMappingWithInternalMethod.class))).thenAnswer(assertMappingAndReturnIdentity(arg, TestClass.class, "someOtherMethod"));
+		underTest.setProcessDomainObjectClass(TestClass.class);
+		ObjectIdentity returned = underTest.getObjectIdentity(invocation);
+		assertEquals(identity, returned);
+	}
+	
+	@Test
+	public void argumentReturnedWithInternalMethodWhenSecuredIdSingleParamExistsUsingSecuredAgainstConfig() throws SecurityException, NoSuchMethodException{
+		Object arg = new Object();
+		stubMethodInvocation("methodWithSecuredAgainstAndSingleParamWithSecuredId", new Class<?>[]{Object.class}, arg);
+		when(mappedIdentityRetrievalStrategy.getObjectIdentity(Mockito.isA(SecureObjectMappingWithInternalMethod.class))).thenAnswer(assertMappingAndReturnIdentity(arg, TestClass.class, "someOtherMethod"));
+		ObjectIdentity returned = underTest.getObjectIdentity(invocation);
+		assertEquals(identity, returned);
+	}
+	
+	@Test
 	public void argumentReturnedWhenSecuredIdParamsExistUsingProcessDomainObjectClass() throws SecurityException, NoSuchMethodException{
 		final Object arg = new Object();
-		stubMethodInvocation("methodWithNoSecuredAgainstAndParamsWhichMatchBecauseOfSecuredId", new Class<?>[]{Object.class}, arg);
+		stubMethodInvocation("methodWithNoSecuredAgainstAndParamsWhichMatchBecauseOfSecuredId", new Class<?>[]{Object.class, Object.class}, new Object(), arg);
 		when(mappedIdentityRetrievalStrategy.getObjectIdentity(Mockito.isA(SecureObjectMappingWithInternalMethod.class))).thenAnswer(assertMappingAndReturnIdentity(arg));
 		underTest.setProcessDomainObjectClass(TestClass.class);
 		ObjectIdentity returned = underTest.getObjectIdentity(invocation);
@@ -104,7 +143,7 @@ public class TestDefaultMethodInvocationObjectIdRetrievalStrategy {
 	@Test
 	public void argumentReturnedWhenSecuredIdParamsExistUsingSecuredAgainstConfig() throws SecurityException, NoSuchMethodException{
 		Object arg = new Object();
-		stubMethodInvocation("methodWithSecuredAgainstAndParamsWhichMatchBecauseOfSecuredId", new Class<?>[]{Object.class}, arg);
+		stubMethodInvocation("methodWithSecuredAgainstAndParamsWhichMatchBecauseOfSecuredId", new Class<?>[]{Object.class, Object.class}, new Object(), arg);
 		when(mappedIdentityRetrievalStrategy.getObjectIdentity(Mockito.isA(SecureObjectMappingWithInternalMethod.class))).thenAnswer(assertMappingAndReturnIdentity(arg));
 		ObjectIdentity returned = underTest.getObjectIdentity(invocation);
 		assertEquals(identity, returned);
@@ -113,7 +152,7 @@ public class TestDefaultMethodInvocationObjectIdRetrievalStrategy {
 	@Test
 	public void argumentReturnedWhenAssignableParamsExistUsingProcessDomainObjectClass() throws SecurityException, NoSuchMethodException{
 		final TestClass2 arg = new TestClass2();
-		stubMethodInvocation("methodWithNoSecuredAgainstAndParamsWhichMatchBecauseOfAssignable", new Class<?>[]{TestClass.class}, arg);
+		stubMethodInvocation("methodWithNoSecuredAgainstAndParamsWhichMatchBecauseOfAssignable", new Class<?>[]{Object.class, TestClass.class}, new Object(), arg);
 		when(mappedIdentityRetrievalStrategy.getObjectIdentity(Mockito.isA(SecureObjectMappingWithInternalMethod.class))).thenAnswer(assertMappingAndReturnIdentity(arg, TestClass2.class));
 		underTest.setProcessDomainObjectClass(TestClass.class);
 		ObjectIdentity returned = underTest.getObjectIdentity(invocation);
@@ -123,7 +162,7 @@ public class TestDefaultMethodInvocationObjectIdRetrievalStrategy {
 	@Test
 	public void argumentReturnedWhenAssignableParamsExistUsingSecuredAgainstConfig() throws SecurityException, NoSuchMethodException{
 		TestClass2 arg = new TestClass2();
-		stubMethodInvocation("methodWithSecuredAgainstAndParamsWhichMatchBecauseOfAssignable", new Class<?>[]{TestClass.class}, arg);
+		stubMethodInvocation("methodWithSecuredAgainstAndParamsWhichMatchBecauseOfAssignable", new Class<?>[]{Object.class, TestClass.class}, new Object(), arg);
 		when(mappedIdentityRetrievalStrategy.getObjectIdentity(Mockito.isA(SecureObjectMappingWithInternalMethod.class))).thenAnswer(assertMappingAndReturnIdentity(arg, TestClass2.class));
 		ObjectIdentity returned = underTest.getObjectIdentity(invocation);
 		assertEquals(identity, returned);

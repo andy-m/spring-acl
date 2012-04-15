@@ -21,7 +21,7 @@ import org.junit.Test;
 	limitations under the License.
 */
 
-public class TestSecureObjectMappingWithInternalMethod {
+public class SecureObjectMappingWithInternalMethodTest {
 
 	@Test
 	public void originalDomainObjectReturnedIfNoInternalMethodIsSpecified(){
