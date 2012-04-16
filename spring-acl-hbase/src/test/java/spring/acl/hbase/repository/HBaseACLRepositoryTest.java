@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.hadoop.hbase.client.HTableInterface;
+import org.apache.hadoop.hbase.client.HTablePool;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -61,6 +63,7 @@ public class HBaseACLRepositoryTest extends AbstractHBaseRepositoryTest {
 
 	private static final String SOME_PRINCIPAL = "some principal";
 	private static final String SOME_AUTHORITY = "Some Authority";
+	protected static final String TEST_TABLE_NAME = "test_acls";
 	private final AclAuthorizationStrategy authorizationStrategy = new AclAuthorizationStrategyImpl(
 			new SimpleGrantedAuthority(SOME_AUTHORITY));
 	private final AuditLogger auditLogger = new ConsoleAuditLogger();
@@ -80,7 +83,13 @@ public class HBaseACLRepositoryTest extends AbstractHBaseRepositoryTest {
 	@Before
 	public void setUp() {
 		setUpAuthorisedUser();
-		underTest = new HBaseACLRepository(getPool(), auditLogger, authorizationStrategy, cache);
+		final HTablePool pool = getPool();
+		underTest = new HBaseACLRepository(pool, auditLogger, authorizationStrategy, cache){
+			@Override
+			protected HTableInterface getTable() {
+				return pool.getTable(TEST_TABLE_NAME);
+			}
+		};
 	}
 
 	@After
@@ -231,7 +240,7 @@ public class HBaseACLRepositoryTest extends AbstractHBaseRepositoryTest {
 
 	private static Map<String, List<String>> getTables() {
 		Map<String, List<String>> tables = new HashMap<String, List<String>>();
-		tables.put(string(HBaseACLRepository.ACL_TABLE), asList(string(HBaseACLRepository.ACE_FAMILY), string(HBaseACLRepository.ACL_FAMILY)));
+		tables.put(TEST_TABLE_NAME, asList(string(HBaseACLRepository.ACE_FAMILY), string(HBaseACLRepository.ACL_FAMILY)));
 		return tables;
 	}
 	

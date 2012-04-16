@@ -80,6 +80,8 @@ import com.google.common.primitives.Primitives;
  * Similarly you can configure converters for additional identifier types using
  * the supplied setAdditionalConverters method.
  * 
+ * The command to create the required HBase table is:  create "acls", "acl", "aces"
+ * 
  * @author Andy Moody
  * 
  */
@@ -159,7 +161,7 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 					+ " this implementation requires globally unique identifiers");
 		}
 
-		HTableInterface table = tablePool.getTable(ACL_TABLE);
+		HTableInterface table = getTable();
 		try
 		{
 			// Need to retrieve the current principal, in order to know who
@@ -191,7 +193,7 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 	@Override
 	public void delete(final ObjectIdentity id) {
 		Assert.notNull(id, "id must not be null");
-		HTableInterface table = tablePool.getTable(ACL_TABLE);
+		HTableInterface table = getTable();
 		try
 		{
 			deleteInternal(id, table);
@@ -220,7 +222,7 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 	public void update(final MutableAcl acl) {
 		Assert.notNull(acl, "acl must not be null");
 
-		HTableInterface table = tablePool.getTable(ACL_TABLE);
+		HTableInterface table = getTable();
 		try
 		{
 			ObjectIdentity identity = acl.getObjectIdentity();
@@ -277,7 +279,7 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 	public Map<ObjectIdentity, Acl> getAclsById(final List<ObjectIdentity> objectIdentities, final List<Sid> sids) {
 		Assert.notNull(objectIdentities, "At least one Object Identity required");
 		Assert.isTrue(objectIdentities.size() > 0, "At least one Object Identity required");
-		HTableInterface table = tablePool.getTable(ACL_TABLE);
+		HTableInterface table = getTable();
 		Map<ObjectIdentity, Acl> toReturn = new HashMap<ObjectIdentity, Acl>();
 		try
 		{
@@ -326,7 +328,7 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 
 	boolean isThereAnAclFor(final ObjectIdentity identity) {
 		Assert.notNull(identity, "Object Identity required");
-		HTableInterface table = tablePool.getTable(ACL_TABLE);
+		HTableInterface table = getTable();
 		try
 		{
 			AclRecord aclKey = new AclRecord(identity, resolveConverter(identity));
@@ -341,6 +343,10 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 		{
 			close(table);
 		}
+	}
+
+	protected HTableInterface getTable() {
+		return tablePool.getTable(ACL_TABLE);
 	}
 
 	private Map<ObjectIdentity, Acl> mapResults(final List<Sid> sids, final Map<Long, ObjectIdentity> identitiesByByteId,
