@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.springframework.security.acls.domain.SimpleMutableAcl;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.AlreadyExistsException;
 import org.springframework.security.acls.model.ChildrenExistException;
 import org.springframework.security.acls.model.MutableAcl;
-import org.springframework.security.acls.model.MutableAclService;
 import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.security.acls.model.ObjectIdentity;
 import org.springframework.security.acls.model.Sid;
@@ -41,7 +41,7 @@ import spring.acl.repository.ACLUpdateRepository;
  * 
  * @author Andy Moody
  */
-public class SimpleACLService implements MutableAclService {
+public class SimpleACLService implements SimpleMutableAclService {
 
 	private final ACLUpdateRepository aclRepository;
 
@@ -92,7 +92,7 @@ public class SimpleACLService implements MutableAclService {
 	}
 
 	@Override
-	public MutableAcl createAcl(final ObjectIdentity objectIdentity) throws AlreadyExistsException {
+	public SimpleMutableAcl createAcl(final ObjectIdentity objectIdentity) throws AlreadyExistsException {
 		return aclRepository.create(objectIdentity);
 	}
 
@@ -103,6 +103,12 @@ public class SimpleACLService implements MutableAclService {
 
 	@Override
 	public MutableAcl updateAcl(final MutableAcl acl) throws NotFoundException {
+		aclRepository.update(acl);
+		return acl;
+	}
+	
+	@Override
+	public SimpleMutableAcl updateAcl(final SimpleMutableAcl acl) throws NotFoundException {
 		aclRepository.update(acl);
 		return acl;
 	}

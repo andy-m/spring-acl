@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.acls.domain.SimpleAcl;
+import org.springframework.security.acls.domain.SimpleMutableAcl;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.AlreadyExistsException;
 import org.springframework.security.acls.model.MutableAcl;
@@ -48,7 +49,7 @@ public interface ACLUpdateRepository {
 	 * @return the created acl
 	 * @throws AlreadyExistsException if an acl already exists for the supplied identity.
 	 */
-	MutableAcl create(ObjectIdentity identity);
+	SimpleMutableAcl create(ObjectIdentity identity);
 	
 	/**
 	 * Updates the specified acl, if it exists

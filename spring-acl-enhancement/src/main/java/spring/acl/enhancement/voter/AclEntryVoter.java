@@ -107,7 +107,6 @@ public class AclEntryVoter implements AccessDecisionVoter<MethodInvocation> {
 	// ========================================================================================================
 
 
-
 	@Override
 	public boolean supports(final ConfigAttribute attribute) {
 		return (attribute.getAttribute() != null) && attribute.getAttribute().equals(getProcessConfigAttribute());

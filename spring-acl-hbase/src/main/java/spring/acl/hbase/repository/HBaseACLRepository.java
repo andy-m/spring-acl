@@ -28,6 +28,7 @@ import org.springframework.security.acls.domain.DefaultPermissionGrantingStrateg
 import org.springframework.security.acls.domain.PermissionFactory;
 import org.springframework.security.acls.domain.PrincipalSid;
 import org.springframework.security.acls.domain.SimpleAcl;
+import org.springframework.security.acls.domain.SimpleMutableAcl;
 import org.springframework.security.acls.model.AccessControlEntry;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.AclCache;
@@ -150,7 +151,7 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 	 * @throws AuthorizationServiceException if an unexpected exception occurred
 	 */
 	@Override
-	public MutableAcl create(final ObjectIdentity id) {
+	public SimpleMutableAcl create(final ObjectIdentity id) {
 		Assert.notNull(id, "id must not be null");
 		if (isThereAnAclFor(id))
 		{

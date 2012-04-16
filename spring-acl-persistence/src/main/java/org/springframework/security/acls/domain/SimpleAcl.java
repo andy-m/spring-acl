@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import org.springframework.security.acls.model.AccessControlEntry;
 import org.springframework.security.acls.model.Acl;
-import org.springframework.security.acls.model.MutableAcl;
 import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.security.acls.model.ObjectIdentity;
 import org.springframework.security.acls.model.Permission;
@@ -43,7 +42,7 @@ import org.springframework.util.Assert;
  * @author Andy Moody
  */
 @SuppressWarnings("serial")
-public class SimpleAcl implements MutableAcl{
+public class SimpleAcl implements SimpleMutableAcl{
 		
 	private Sid owner;
 	private final List<AccessControlEntry> entries;
@@ -185,7 +184,28 @@ public class SimpleAcl implements MutableAcl{
 	public void setParent(final Acl newParent) {
 		throw new UnsupportedOperationException("inheritance is not currently supported");
 	}
+	
+	/* Methods inherited from SimpleMutableAcl */
 
+	@Override
+	public void insertGrantedPermissions(final Sid sid, final Permission... permissions) {
+		insertPermissions(sid, entries.size(), true, permissions);
+	}
+
+	@Override
+	public void insertGrantedPermissions(final Sid sid, final int atIndexLocation, final Permission... permissions) {
+		insertPermissions(sid, atIndexLocation, true, permissions);
+	}
+
+	@Override
+	public void insertDeniedPermissions(final Sid sid, final Permission... permissions) {
+		insertPermissions(sid, entries.size(), false, permissions);
+	}
+	
+	@Override
+	public void insertDeniedPermissions(final Sid sid, final int atIndexLocation, final Permission... permissions) {
+		insertPermissions(sid, atIndexLocation, false, permissions);
+	}
 	
 	/* Other methods */
 
@@ -253,6 +273,18 @@ public class SimpleAcl implements MutableAcl{
 		if (aceIndex >= this.entries.size()) {
 			throw new NotFoundException("aceIndex must refer to an index of the AccessControlEntry list. " +
 					"List size is " + entries.size() + ", index was " + aceIndex);
+		}
+	}
+	
+	private void insertPermissions(final Sid sid, final int atIndexLocation, final boolean granted, final Permission[] permissions) {
+		Assert.notNull(sid, "sid is Mandatory");
+		Assert.notEmpty(permissions, "permissions is Mandatory");
+		Assert.noNullElements(permissions, "permissions must not contain null elements");
+		int permissionPosition = atIndexLocation;
+		for (Permission permission : permissions)
+		{
+			insertAce(permissionPosition, permission, sid, granted);
+			permissionPosition++;
 		}
 	}
 

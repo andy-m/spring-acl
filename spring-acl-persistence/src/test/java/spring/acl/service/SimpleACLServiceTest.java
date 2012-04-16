@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.springframework.security.acls.domain.SimpleMutableAcl;
 import org.springframework.security.acls.model.AlreadyExistsException;
 import org.springframework.security.acls.model.MutableAcl;
 import org.springframework.security.acls.model.ObjectIdentity;
@@ -37,7 +38,7 @@ public class SimpleACLServiceTest {
 	@Mock
 	private ObjectIdentity oid;
 	@Mock
-	private MutableAcl acl;
+	private SimpleMutableAcl acl;
 
 	@Before
 	public void setUp() {
