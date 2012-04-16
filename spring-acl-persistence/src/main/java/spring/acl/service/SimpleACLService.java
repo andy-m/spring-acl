@@ -85,7 +85,7 @@ public class SimpleACLService implements SimpleMutableAclService {
 		Set<ObjectIdentity> remainingIdentities = new HashSet<ObjectIdentity>(objects);
 		if (result.size() != remainingIdentities.size())
 		{
-			remainingIdentities.removeAll(remainingIdentities);
+			remainingIdentities.removeAll(result.keySet());
 			throw new NotFoundException("Unable to find ACL information for object identities '" + remainingIdentities + "'");
 		}
 		return result;
