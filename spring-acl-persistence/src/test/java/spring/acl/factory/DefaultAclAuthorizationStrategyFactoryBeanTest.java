@@ -1,4 +1,4 @@
-package spring.acl.repository;
+package spring.acl.factory;
 
 import static org.junit.Assert.assertEquals;
 
@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.springframework.security.acls.domain.AclAuthorizationStrategyImpl;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import spring.acl.factory.DefaultAclAuthorizationStrategyFactoryBean;
 import spring.acl.util.reflect.FieldUtil;
 
 /*

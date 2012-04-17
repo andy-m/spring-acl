@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 */
 
 /**
- * Specifies that the annotated parameter or method
+ * Specifies that the annotated parameter
  * provides an object which can be used as a Secure Object Id
  * 
  * The internalMethod, if specified, defines a method which should
@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
 
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.PARAMETER})
+@Target({ElementType.PARAMETER})
 public @interface SecuredId {
 
 	String internalMethod() default "";

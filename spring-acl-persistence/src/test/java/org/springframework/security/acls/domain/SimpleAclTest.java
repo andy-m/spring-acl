@@ -22,6 +22,8 @@ import org.springframework.security.acls.model.Permission;
 import org.springframework.security.acls.model.Sid;
 import org.springframework.security.acls.model.UnloadedSidException;
 
+import spring.acl.util.ACLUtil;
+
 /*
 	Copyright 2012 Andy Moody
 	

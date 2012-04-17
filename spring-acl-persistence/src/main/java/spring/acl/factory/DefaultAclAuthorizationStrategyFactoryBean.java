@@ -1,4 +1,4 @@
-package spring.acl.repository;
+package spring.acl.factory;
 
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.security.acls.domain.AclAuthorizationStrategyImpl;

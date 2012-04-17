@@ -13,6 +13,7 @@ import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.AclService;
 import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.security.acls.model.ObjectIdentity;
+import org.springframework.security.acls.model.ObjectIdentityRetrievalStrategy;
 import org.springframework.security.acls.model.Permission;
 import org.springframework.security.acls.model.Sid;
 import org.springframework.security.acls.model.SidRetrievalStrategy;
@@ -42,21 +43,20 @@ import spring.acl.enhancement.identity.strategy.method.MethodInvocationObjectIdR
  * Modified version of AbstractAclVoter which simplifies, and makes more
  * flexible, the process of retrieving secured object identifiers. 
  * 
- * The objectIdentityRetrievalStrategy can be set to allow users to resolve the
- * ObjectIdentity in any way they choose from the MethodInvocation. The default
- * implementation is to extend the Spring Security implementation by allowing
- * separation of the Secured Class from the method parameter - thus allowing
- * us to use, for example, the identifier of an object passed to a method
- * to check acl permissions without actually having to physically load the object
- * from a datasource first.
+ * The {@link ObjectIdentityRetrievalStrategy} can be set to allow users to resolve the
+ * {@link ObjectIdentity} in any way they choose from the {@link MethodInvocation}. The default
+ * implementation extends the Spring Security implementation by allowing separation of the 
+ * Secured Class from the method parameter - thus allowing us to use, for example, 
+ * the identifier of an object passed to a method to check acl permissions without 
+ * having to physically load the object from a datasource first.
  *
  * To configure this as per the standard Spring {@link org.springframework.security.acls.AclEntryVoter}
- * simply configure with the approprate processConfigAttribute and internalMethod
- * parameters set. 
+ * simply configure with the appropriate processConfigAttribute and internalMethod parameters set. 
+ * 
  * If you want to remove the default use of 'getId()' as a final call to retrieve the id from a 
- * resolved domain object then simple configure the {@link DefaultMethodInvocationObjectIdRetrievalStrategy}  
- * with a {@link ConfigurableObjectIdentityRetrievalStrategy} specifying no constructor args to disable the call 
- * altogether or a constructor arg with the method name you'd like to use as an alternative.
+ * resolved domain object then simply configure the {@link DefaultMethodInvocationObjectIdRetrievalStrategy}  
+ * with a {@link ConfigurableObjectIdentityRetrievalStrategy} specifying no constructor args to disable 
+ * the call altogether or a constructor arg with the method name you'd like to use as an alternative.
  * 
  * @author Andy Moody
  */

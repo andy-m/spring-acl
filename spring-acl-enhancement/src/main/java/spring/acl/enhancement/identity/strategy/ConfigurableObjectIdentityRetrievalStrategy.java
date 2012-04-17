@@ -34,7 +34,7 @@ import spring.acl.util.reflect.MethodUtil;
  * for retrieving the id.
  * 
  * If no identifierMethod is configured the domain object itself
- * is used as the identifier.
+ * is assumed to be the identifier.
  * 
  * @author Andy Moody
  */

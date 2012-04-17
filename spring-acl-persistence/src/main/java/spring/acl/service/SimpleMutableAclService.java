@@ -3,11 +3,13 @@
  */
 package spring.acl.service;
 
-import org.springframework.security.acls.domain.SimpleMutableAcl;
 import org.springframework.security.acls.model.AlreadyExistsException;
+import org.springframework.security.acls.model.MutableAcl;
 import org.springframework.security.acls.model.MutableAclService;
 import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.security.acls.model.ObjectIdentity;
+
+import spring.acl.entity.SimpleMutableAcl;
 
 
 /*
@@ -27,7 +29,8 @@ import org.springframework.security.acls.model.ObjectIdentity;
  */
 
 /**
- *
+ * Extension of MutableAclService allowing us to return and handle the 
+ * {@link SimpleMutableAcl} interface rather than {@link MutableAcl}.
  *
  * @author Andy Moody
  */

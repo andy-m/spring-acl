@@ -44,17 +44,16 @@ import spring.acl.enhancement.identity.strategy.ExtendedObjectIdentityRetrievalS
  * 
  * 1) Is this the only parameter
  * 
- * 2) Does this parameter have the {@link SecuredId} annotation with a class
- * from which the configured class can be assigned.
+ * 2) Does this parameter have the {@link SecuredId} annotation
  * 
- * 3) Is the configured class assignable from the class of the parameter.
+ * 3) Is the configured {@link SecuredAgainst} class or processDomainObjectClass assignable from the class of the parameter.
  * 
- * So any parameter matching criteria 1) will be used in preference to a
+ * Any parameter matching criteria 1) will be used in preference to a
  * parameter matching criteria 2 even if the parameter matching criteria 2 is
  * earlier in the argument list.
  * 
  * The optional internalMethod parameter is then used to invoke a method on the resolved
- * parameter if it is present. Otherwise it will try to use the parameter value itself as the id.
+ * parameter if it is present. Otherwise we try to use the parameter value itself as the id.
  * 
  * The internalMethod may also be configured on the {@link SecuredId} annotation. If there is an
  * internalMethod configured on the annotation it will take precedence over any configured in this
@@ -66,7 +65,7 @@ import spring.acl.enhancement.identity.strategy.ExtendedObjectIdentityRetrievalS
  * or
  * no suitable parameter can be found 
  * or 
- * the configured internalMethod is inaccessible or uninvokable.
+ * the configured internalMethod is inaccessible or not invokable.
  * 
  * @author Andy Moody
  */

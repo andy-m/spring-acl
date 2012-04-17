@@ -5,10 +5,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -34,9 +32,7 @@ import org.springframework.security.acls.domain.SimpleAcl;
 import org.springframework.security.acls.model.AccessControlEntry;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.AclCache;
-import org.springframework.security.acls.model.AlreadyExistsException;
 import org.springframework.security.acls.model.MutableAcl;
-import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.security.acls.model.ObjectIdentity;
 import org.springframework.security.acls.model.Sid;
 import org.springframework.security.authentication.TestingAuthenticationToken;
@@ -172,22 +168,6 @@ public class HBaseACLRepositoryTest extends AbstractHBaseRepositoryTest {
 		MutableAcl acl1 = underTest.create(id);
 		assertNotNull(acl1);
 		assertTrue(underTest.isThereAnAclFor(id));
-
-		ObjectIdentityImpl anotherId = new ObjectIdentityImpl(HBaseACLRepository.class, "id2");
-		MutableAcl acl2 = underTest.create(anotherId);
-		assertNotNull(acl2);
-		assertTrue(underTest.isThereAnAclFor(anotherId));
-
-		try
-		{
-			ObjectIdentityImpl anIdentityWithTheSameIdAndDifferentClass = new ObjectIdentityImpl(Object.class, "id1");
-			underTest.create(anIdentityWithTheSameIdAndDifferentClass);
-			fail();
-		}
-		catch (AlreadyExistsException e)
-		{
-			// expected
-		}
 	}
 	
 	@Test
@@ -217,14 +197,6 @@ public class HBaseACLRepositoryTest extends AbstractHBaseRepositoryTest {
 		assertEquals(1, entries.size());
 	}
 	
-	@Test(expected = NotFoundException.class)
-	public void updateWhenAclDoesNotExist(){
-		ObjectIdentityImpl id = new ObjectIdentityImpl(HBaseACLRepository.class, "id1");
-		MutableAcl acl1 = new SimpleAcl(id, null, new ArrayList<AccessControlEntry>(),null, null);
-		
-		underTest.update(acl1);
-	}
-
 	private SimpleAcl createAcl(final String id) {
 		ObjectIdentityImpl objectIdentity = new ObjectIdentityImpl(HBaseACLRepository.class, id);
 		SimpleAcl acl = (SimpleAcl) underTest.create(objectIdentity);

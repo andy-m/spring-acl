@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.security.acls.domain.SimpleMutableAcl;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.AlreadyExistsException;
 import org.springframework.security.acls.model.ChildrenExistException;
@@ -16,6 +15,7 @@ import org.springframework.security.acls.model.ObjectIdentity;
 import org.springframework.security.acls.model.Sid;
 import org.springframework.util.Assert;
 
+import spring.acl.entity.SimpleMutableAcl;
 import spring.acl.repository.ACLUpdateRepository;
 
 /*
@@ -35,9 +35,9 @@ import spring.acl.repository.ACLUpdateRepository;
 */
 
 /**
- * Implementation of MutableAclService which delegates
- * the majority of responsibility to the configured
- * repository. 
+ * Implementation of {@link SimpleMutableAclService} which will
+ * retrieve values from the configured repository and perform
+ * the necessary validation on inputs and outputs.
  * 
  * @author Andy Moody
  */
@@ -55,34 +55,52 @@ public class SimpleACLService implements SimpleMutableAclService {
 		return null;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.acls.model.AclService#readAclById(org.springframework.security.acls.model.ObjectIdentity)
+	 */
 	@Override
-	public Acl readAclById(final ObjectIdentity object) throws NotFoundException {
-		return readAclById(object, null);
+	public Acl readAclById(final ObjectIdentity identity) throws NotFoundException {
+		return readAclById(identity, null);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.acls.model.AclService#readAclById(org.springframework.security.acls.model.ObjectIdentity, java.util.List)
+	 */
 	@Override
-	public Acl readAclById(final ObjectIdentity object, final List<Sid> sids) throws NotFoundException {
-		Map<ObjectIdentity, Acl> map = readAclsById(Arrays.asList(object), sids);
-		Assert.isTrue(map.containsKey(object), "There should have been an Acl entry for ObjectIdentity " + object);
-
-		return map.get(object);
+	public Acl readAclById(final ObjectIdentity identity, final List<Sid> sids) throws NotFoundException {
+		Map<ObjectIdentity, Acl> map = readAclsById(Arrays.asList(identity), sids);
+		return map.get(identity);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.acls.model.AclService#readAclsById(java.util.List)
+	 */
 	@Override
-	public Map<ObjectIdentity, Acl> readAclsById(final List<ObjectIdentity> objects) throws NotFoundException {
-		return readAclsById(objects, null);
+	public Map<ObjectIdentity, Acl> readAclsById(final List<ObjectIdentity> identities) throws NotFoundException {
+		return readAclsById(identities, null);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.acls.model.AclService#readAclsById(java.util.List, java.util.List)
+	 */
 	@Override
-	public Map<ObjectIdentity, Acl> readAclsById(final List<ObjectIdentity> objects, final List<Sid> sids)
+	public Map<ObjectIdentity, Acl> readAclsById(final List<ObjectIdentity> identities, final List<Sid> sids)
 			throws NotFoundException {
-		Map<ObjectIdentity, Acl> result = aclRepository.getAclsById(objects, sids);
+		Assert.notNull(identities, "At least one Object Identity required");
+		Assert.isTrue(identities.size() > 0, "At least one Object Identity required");
+		Assert.noNullElements(identities.toArray(new ObjectIdentity[0]), "Null object identities are not permitted");
+		
+		Map<ObjectIdentity, Acl> result = aclRepository.getAclsById(identities, sids);
 
 		/*
 		 * Check we found an ACL for every requested object. Where ACL's do not
 		 * exist for some objects throw a suitable exception.
 		 */
-		Set<ObjectIdentity> remainingIdentities = new HashSet<ObjectIdentity>(objects);
+		Set<ObjectIdentity> remainingIdentities = new HashSet<ObjectIdentity>(identities);
 		if (result.size() != remainingIdentities.size())
 		{
 			remainingIdentities.removeAll(result.keySet());
@@ -91,26 +109,59 @@ public class SimpleACLService implements SimpleMutableAclService {
 		return result;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see spring.acl.service.SimpleMutableAclService#createAcl(org.springframework.security.acls.model.ObjectIdentity)
+	 */
 	@Override
-	public SimpleMutableAcl createAcl(final ObjectIdentity objectIdentity) throws AlreadyExistsException {
-		return aclRepository.create(objectIdentity);
+	public SimpleMutableAcl createAcl(final ObjectIdentity identity) throws AlreadyExistsException {
+		Assert.notNull(identity, "identity must not be null");
+		if (aclRepository.isThereAnAclFor(identity))
+		{
+			throw new AlreadyExistsException("Acl already exists for identity " + identity
+					+ " this implementation requires globally unique identifiers");
+		}
+		return aclRepository.create(identity);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.acls.model.MutableAclService#deleteAcl(org.springframework.security.acls.model.ObjectIdentity, boolean)
+	 */
 	@Override
-	public void deleteAcl(final ObjectIdentity objectIdentity, final boolean deleteChildren) throws ChildrenExistException {
-		aclRepository.delete(objectIdentity);
+	public void deleteAcl(final ObjectIdentity identity, final boolean deleteChildren) throws ChildrenExistException {
+		Assert.notNull(identity, "identity must not be null");
+		aclRepository.delete(identity);
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.springframework.security.acls.model.MutableAclService#updateAcl(org.springframework.security.acls.model.MutableAcl)
+	 */
 	@Override
 	public MutableAcl updateAcl(final MutableAcl acl) throws NotFoundException {
+		verifyAclExists(acl);
 		aclRepository.update(acl);
 		return acl;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see spring.acl.service.SimpleMutableAclService#updateAcl(org.springframework.security.acls.domain.SimpleMutableAcl)
+	 */
 	@Override
 	public SimpleMutableAcl updateAcl(final SimpleMutableAcl acl) throws NotFoundException {
+		verifyAclExists(acl);
 		aclRepository.update(acl);
 		return acl;
+	}
+	
+	private void verifyAclExists(final MutableAcl acl) {
+		ObjectIdentity identity = acl.getObjectIdentity();
+		if (!aclRepository.isThereAnAclFor(identity))
+		{
+			throw new NotFoundException("Acl does not exist for object identity " + identity);
+		}
 	}
 
 }

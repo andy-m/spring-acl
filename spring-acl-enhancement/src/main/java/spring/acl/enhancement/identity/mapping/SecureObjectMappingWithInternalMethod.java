@@ -25,6 +25,8 @@ import spring.acl.util.reflect.MethodUtil;
  * the results of executing the specified internal method against the
  * provided domain object instead of returning the domain object itself. 
  * 
+ * If no internalMethod is specified the domain object itself will be returned.
+ * 
  * @author Andy Moody
  */
 public class SecureObjectMappingWithInternalMethod implements SecureObjectMapping {

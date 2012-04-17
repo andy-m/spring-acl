@@ -1,5 +1,7 @@
 package spring.acl.enhancement.identity.mapping;
 
+import spring.acl.enhancement.identity.strategy.ExtendedObjectIdentityRetrievalStrategy;
+
 /*
 	Copyright 2012 Andy Moody
 	
@@ -16,6 +18,14 @@ package spring.acl.enhancement.identity.mapping;
 	limitations under the License.
 */
 
+/**
+ * Basic implementation of {@link SecureObjectMapping}
+ * used to wrap a domainObject so it can be passed to the 
+ * same {@link ExtendedObjectIdentityRetrievalStrategy#getObjectIdentity(SecureObjectMapping mapping)}
+ * method
+ *
+ * @author Andy Moody
+ */
 public class BasicSecureObjectMapping implements SecureObjectMapping{
 
 	private final Object domainObject;

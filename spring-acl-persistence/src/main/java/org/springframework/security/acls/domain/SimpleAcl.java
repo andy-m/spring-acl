@@ -14,6 +14,9 @@ import org.springframework.security.acls.model.Sid;
 import org.springframework.security.acls.model.UnloadedSidException;
 import org.springframework.util.Assert;
 
+import spring.acl.entity.SimpleMutableAcl;
+import spring.acl.util.ACLUtil;
+
 /*
 	Copyright 2012 Andy Moody
 	

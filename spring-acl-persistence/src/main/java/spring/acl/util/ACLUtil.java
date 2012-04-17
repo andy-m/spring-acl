@@ -1,7 +1,8 @@
-package org.springframework.security.acls.domain;
+package spring.acl.util;
 
 import java.util.List;
 
+import org.springframework.security.acls.domain.AclAuthorizationStrategy;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.Permission;
 import org.springframework.security.acls.model.PermissionGrantingStrategy;

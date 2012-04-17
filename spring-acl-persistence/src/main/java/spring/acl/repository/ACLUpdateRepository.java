@@ -4,14 +4,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.security.acls.domain.SimpleAcl;
-import org.springframework.security.acls.domain.SimpleMutableAcl;
 import org.springframework.security.acls.model.Acl;
-import org.springframework.security.acls.model.AlreadyExistsException;
 import org.springframework.security.acls.model.MutableAcl;
-import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.security.acls.model.ObjectIdentity;
 import org.springframework.security.acls.model.Sid;
 
+import spring.acl.entity.SimpleMutableAcl;
 import spring.acl.service.SimpleACLService;
 
 /*
@@ -47,14 +45,12 @@ public interface ACLUpdateRepository {
 	 * Creates a new acl for the given identity, if one does not already exist
 	 * @param identity
 	 * @return the created acl
-	 * @throws AlreadyExistsException if an acl already exists for the supplied identity.
 	 */
 	SimpleMutableAcl create(ObjectIdentity identity);
 	
 	/**
 	 * Updates the specified acl, if it exists
 	 * @param acl
-	 * @throws NotFoundException if the supplied acl is not already persisted
 	 */
 	void update(final MutableAcl acl);
 
@@ -63,5 +59,12 @@ public interface ACLUpdateRepository {
 	 * @param acl
 	 */
 	void delete(ObjectIdentity identity);
+
+	/**
+	 * Checks if an acl exists for the supplied identity.
+	 * @param identity
+	 * @return true if an acl exists for the supplied identity, false otherwise
+	 */
+	boolean isThereAnAclFor(ObjectIdentity identity);
 
 }

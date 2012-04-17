@@ -18,7 +18,6 @@ import org.apache.hadoop.hbase.client.HTablePool;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.springframework.security.access.AuthorizationServiceException;
-import org.springframework.security.acls.domain.ACLUtil;
 import org.springframework.security.acls.domain.AccessControlEntryImpl;
 import org.springframework.security.acls.domain.AclAuthorizationStrategy;
 import org.springframework.security.acls.domain.AuditLogger;
@@ -28,13 +27,10 @@ import org.springframework.security.acls.domain.DefaultPermissionGrantingStrateg
 import org.springframework.security.acls.domain.PermissionFactory;
 import org.springframework.security.acls.domain.PrincipalSid;
 import org.springframework.security.acls.domain.SimpleAcl;
-import org.springframework.security.acls.domain.SimpleMutableAcl;
 import org.springframework.security.acls.model.AccessControlEntry;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.AclCache;
-import org.springframework.security.acls.model.AlreadyExistsException;
 import org.springframework.security.acls.model.MutableAcl;
-import org.springframework.security.acls.model.NotFoundException;
 import org.springframework.security.acls.model.ObjectIdentity;
 import org.springframework.security.acls.model.PermissionGrantingStrategy;
 import org.springframework.security.acls.model.Sid;
@@ -42,11 +38,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.Assert;
 
+import spring.acl.entity.SimpleMutableAcl;
 import spring.acl.hbase.identifier.converter.AclIdentifierConverter;
 import spring.acl.hbase.identifier.converter.IntegerAclIdentifierConverter;
 import spring.acl.hbase.identifier.converter.LongAclIdentifierConverter;
 import spring.acl.hbase.identifier.converter.StringAclIdentifierConverter;
 import spring.acl.repository.ACLUpdateRepository;
+import spring.acl.util.ACLUtil;
 import spring.acl.util.generics.GenericTypeResolver;
 
 import com.google.common.primitives.Primitives;
@@ -147,20 +145,12 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 	/**
 	 * Creates an acl.
 	 * 
-	 * @param id which must not be null.
-	 * @throws AlreadyExistsException if an acl already exists for the supplied
-	 *             identity
+	 * @param identity which must not be null.
 	 * @throws AuthorizationServiceException if an unexpected exception occurred
 	 */
 	@Override
-	public SimpleMutableAcl create(final ObjectIdentity id) {
-		Assert.notNull(id, "id must not be null");
-		if (isThereAnAclFor(id))
-		{
-			throw new AlreadyExistsException("Acl already exists for identity " + id
-					+ " this implementation requires globally unique identifiers");
-		}
-
+	public SimpleMutableAcl create(final ObjectIdentity identity) {
+		Assert.notNull(identity, "identity must not be null");
 		HTableInterface table = getTable();
 		try
 		{
@@ -169,8 +159,7 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 			PrincipalSid owner = new PrincipalSid(auth);
 
-			SimpleAcl acl = new SimpleAcl(id, owner, new ArrayList<AccessControlEntry>(), null, util);
-			ObjectIdentity identity = acl.getObjectIdentity();
+			SimpleAcl acl = new SimpleAcl(identity, owner, new ArrayList<AccessControlEntry>(), null, util);
 			save(acl, table, new AclRecord(identity, owner, resolveConverter(identity)));
 			return acl;
 		}
@@ -187,16 +176,16 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 	/**
 	 * Deletes an acl.
 	 * 
-	 * @param id which must not be null.
+	 * @param identity which must not be null.
 	 * @throws AuthorizationServiceException if an unexpected exception occurred
 	 */
 	@Override
-	public void delete(final ObjectIdentity id) {
-		Assert.notNull(id, "id must not be null");
+	public void delete(final ObjectIdentity identity) {
+		Assert.notNull(identity, "identity must not be null");
 		HTableInterface table = getTable();
 		try
 		{
-			deleteInternal(id, table);
+			deleteInternal(identity, table);
 		}
 		catch (IOException e)
 		{
@@ -213,26 +202,18 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 	 * replaces the row with the new acl.
 	 * 
 	 * @param acl which must not be null.
-	 * @throws NotFoundException if no corresponding acl exists
-	 *             AuthorizationServiceException if: some mandatory aspect of
-	 *             the supplied acl is null or if an unexpected exception
-	 *             occurred
+	 * @throws AuthorizationServiceException if some mandatory aspect of
+	 *         the supplied acl is null or if an unexpected exception
+	 *         occurred
 	 */
 	@Override
 	public void update(final MutableAcl acl) {
 		Assert.notNull(acl, "acl must not be null");
-
 		HTableInterface table = getTable();
 		try
 		{
 			ObjectIdentity identity = acl.getObjectIdentity();
 			AclRecord aclRecord = new AclRecord(identity, acl.getOwner(), resolveConverter(identity));
-			Get get = new Get(aclRecord.getKey());
-			boolean exists = table.exists(get);
-			if (!exists)
-			{
-				throw new NotFoundException("Acl does not exist for object identity " + identity);
-			}
 			deleteInternal(aclRecord, table);
 			save(acl, table, aclRecord);
 		}
@@ -279,6 +260,7 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 	public Map<ObjectIdentity, Acl> getAclsById(final List<ObjectIdentity> objectIdentities, final List<Sid> sids) {
 		Assert.notNull(objectIdentities, "At least one Object Identity required");
 		Assert.isTrue(objectIdentities.size() > 0, "At least one Object Identity required");
+		Assert.noNullElements(objectIdentities.toArray(new ObjectIdentity[0]), "Null object identities are not permitted");
 		HTableInterface table = getTable();
 		Map<ObjectIdentity, Acl> toReturn = new HashMap<ObjectIdentity, Acl>();
 		try
@@ -326,7 +308,8 @@ public class HBaseACLRepository implements ACLUpdateRepository {
 		}
 	}
 
-	boolean isThereAnAclFor(final ObjectIdentity identity) {
+	@Override
+	public boolean isThereAnAclFor(final ObjectIdentity identity) {
 		Assert.notNull(identity, "Object Identity required");
 		HTableInterface table = getTable();
 		try

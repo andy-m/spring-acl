@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.springframework.security.acls.domain;
+package spring.acl.entity;
 
 import org.springframework.security.acls.model.MutableAcl;
 import org.springframework.security.acls.model.Permission;
@@ -25,7 +25,8 @@ import org.springframework.security.acls.model.Sid;
  */
 
 /**
- * Extension of the MutableAcl which provides some helpful methods.
+ * Extension of the MutableAcl which provides some additional methods
+ * aimed at making creation / management of acl's easier.
  *
  * @author Andy Moody
  */
