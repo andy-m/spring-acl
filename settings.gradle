@@ -1,4 +1,4 @@
-rootProject.name="org.spring.acl.enhancement"
+rootProject.name="net.projectmonkey"
 projects = [ 'spring-acl-util', 'spring-acl-persistence', 'spring-acl-hbase', 'spring-acl-enhancement']
 
 projects.each { projectName ->

@@ -8,7 +8,7 @@ def config = new ConfigSlurper().parse(versionFile.toURL());
 
 allprojects {
 	version = "${config.versionNumber}.${config.buildNumber}"
-	group = "org.spring.acl.enhancement"
+	group = "net.projectmonkey"
 }
 
 dependsOnChildren()

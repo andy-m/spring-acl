@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
 	compile "org.springframework.security:spring-security-acl:${springVersion}"
-	
+
 	testCompile "junit:junit:4.8.2"
 	testCompile "org.mockito:mockito-all:1.8.5"
 }
@@ -29,8 +29,53 @@ task testJar(type: Jar) {
 	from sourceSets.test.output
 }
 
+task javadocJar(type: Jar, dependsOn:javadoc) {      
+	classifier = 'javadoc'     
+	from javadoc.destinationDir 
+}   
+
 artifacts {
 	archives sourcesJar
 	archives testJar
+	archives javadocJar
 }
 
+
+uploadArchives {
+
+  repositories.mavenDeployer {
+    configuration = configurations.archives
+ 
+    repository(url: "http://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+      authentication(userName: nexusUsername, password: nexusPassword)
+    }
+ 
+    pom.project {
+      name '${projectName}'
+      packaging 'jar'
+      description '${projectDesc}'
+      url 'http://projectmonkey.net/spring-acl'
+      inceptionYear '2012'
+ 
+      scm {
+        url 'scm:git://github.com/andy-m/spring-acl.git'
+        connection 'scm:git://github.com/andy-m/spring-acl.git'
+      }
+ 
+      licenses {
+        license {
+          name 'The Apache Software License, Version 2.0'
+	  url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+	  distribution 'repo'
+        }
+      }
+      developers {
+        developer {
+          id 'andym'
+          name 'Andy Moody'
+          email 'andy.moody@projectmonkey.net'
+         }
+      }
+    }
+  }
+}

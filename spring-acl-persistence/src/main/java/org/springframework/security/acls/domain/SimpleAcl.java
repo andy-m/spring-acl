@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import net.projectmonkey.spring.acl.entity.SimpleMutableAcl;
+import net.projectmonkey.spring.acl.util.ACLUtil;
+
 import org.springframework.security.acls.model.AccessControlEntry;
 import org.springframework.security.acls.model.Acl;
 import org.springframework.security.acls.model.NotFoundException;
@@ -14,8 +17,6 @@ import org.springframework.security.acls.model.Sid;
 import org.springframework.security.acls.model.UnloadedSidException;
 import org.springframework.util.Assert;
 
-import spring.acl.entity.SimpleMutableAcl;
-import spring.acl.util.ACLUtil;
 
 /*
 	Copyright 2012 Andy Moody
